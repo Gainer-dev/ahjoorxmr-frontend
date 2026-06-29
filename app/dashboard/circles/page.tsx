@@ -1,9 +1,10 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Users, DollarSign, Clock } from "lucide-react";
 import CopyButton from "@/components/ui/CopyButton";
+import JoinCircleModal from "@/components/modals/JoinCircleModal";
 
 const CURRENT_WALLET = "0x23g43gdaa8f2c5b1e9d0f7a34bc6e12d8a9f5c3b";
 
@@ -75,6 +76,8 @@ function CirclesContent() {
   const router = useRouter();
   const tab: Tab = (searchParams.get("tab") as Tab) ?? "my";
 
+  const [joiningCircle, setJoiningCircle] = useState<Circle | null>(null);
+
   const myCircles = mockCircles.filter((c) => c.members.includes(CURRENT_WALLET));
   const discoverCircles = mockCircles.filter((c) => !c.members.includes(CURRENT_WALLET));
   const displayCircles = tab === "my" ? myCircles : discoverCircles;
@@ -83,12 +86,15 @@ function CirclesContent() {
     router.push(`/dashboard/circles?tab=${t}`);
   };
 
+  const handleJoinClose = useCallback(() => setJoiningCircle(null), []);
+
   return (
+    <>
     <div className="space-y-8 pb-20 md:pb-0">
       {/* Page Title */}
       <div className="flex items-center gap-4">
         <h1 className="text-2xl font-bold font-sora text-white shrink-0">Circles</h1>
-        <div className="h-[1px] bg-[#ffffff1a] w-full" />
+        <div className="h-px bg-[#ffffff1a] w-full" />
       </div>
 
       {/* Tab Toggle */}
@@ -177,7 +183,10 @@ function CirclesContent() {
                 </div>
 
                 {tab === "discover" && (
-                  <button className="mt-auto px-5 py-2.5 bg-[#4B6B76] hover:bg-[#3D5A64] text-white text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B6B76] focus-visible:ring-offset-2 focus-visible:ring-offset-[#212124]">
+                  <button
+                    onClick={() => setJoiningCircle(circle)}
+                    className="mt-auto px-5 py-2.5 bg-[#4B6B76] hover:bg-[#3D5A64] text-white text-sm font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#4B6B76] focus-visible:ring-offset-2 focus-visible:ring-offset-[#212124]"
+                  >
                     Join Circle
                   </button>
                 )}
@@ -187,6 +196,11 @@ function CirclesContent() {
         )}
       </div>
     </div>
+
+    {joiningCircle && (
+      <JoinCircleModal circle={joiningCircle} onClose={handleJoinClose} />
+    )}
+    </>
   );
 }
 
